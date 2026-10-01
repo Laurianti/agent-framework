@@ -560,7 +560,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
             // Update response status to completed if not already in a terminal state
             if (!state.IsTerminal)
             {
-                state.Response = state.Response! with
+                var completedResponse = state.Response! with
                 {
                     Status = ResponseStatus.Completed
                 };
@@ -569,7 +569,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
                 var completedEvent = new StreamingResponseCompleted
                 {
                     SequenceNumber = sequenceNumber,
-                    Response = state.Response
+                    Response = completedResponse
                 };
 
                 state.AddStreamingEvent(completedEvent);
@@ -578,7 +578,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
         catch (OperationCanceledException)
         {
             // Update response status to cancelled
-            state.Response = state.Response! with
+            var cancelledResponse = state.Response! with
             {
                 Status = ResponseStatus.Cancelled
             };
@@ -587,7 +587,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
             var cancelledEvent = new StreamingResponseCancelled
             {
                 SequenceNumber = sequenceNumber,
-                Response = state.Response
+                Response = cancelledResponse
             };
 
             state.AddStreamingEvent(cancelledEvent);
@@ -595,7 +595,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
         catch (Exception ex)
         {
             // Update response status to failed
-            state.Response = state.Response! with
+            var failedResponse = state.Response! with
             {
                 Status = ResponseStatus.Failed,
                 Error = new ResponseError
@@ -609,7 +609,7 @@ internal sealed class InMemoryResponsesService : IResponsesService, IDisposable
             var failedEvent = new StreamingResponseFailed
             {
                 SequenceNumber = sequenceNumber,
-                Response = state.Response
+                Response = failedResponse
             };
 
             state.AddStreamingEvent(failedEvent);
